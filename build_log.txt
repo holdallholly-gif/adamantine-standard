@@ -1,0 +1,8 @@
+# Deterministic Build Log (Template)
+OS: 
+Compiler/Toolchain: 
+TeX/Renderer: 
+Fonts: 
+Commands: 
+Outputs: 
+Checks: PDF/A-2u validation passed; accessibility checks completed

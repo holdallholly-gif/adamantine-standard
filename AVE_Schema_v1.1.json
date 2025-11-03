@@ -1,0 +1,85 @@
+{
+  "$schema": "https://ave.example/schema/v1.1",
+  "title": "AVE Ledger Entry",
+  "type": "object",
+  "required": [
+    "doi",
+    "sha256",
+    "timestamp_utc",
+    "registrant",
+    "standard"
+  ],
+  "properties": {
+    "doi": {
+      "type": "string",
+      "description": "DOI (e.g., 10.5281/zenodo.XXXXXXX)"
+    },
+    "sha256": {
+      "type": "string",
+      "description": "Hex-encoded SHA-256 of the DOI-downloaded artifact"
+    },
+    "timestamp_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "registrant": {
+      "type": "string",
+      "description": "Name \u2014 Role"
+    },
+    "standard": {
+      "type": "string",
+      "description": "Adamantine Standard version (e.g., v1.1)"
+    },
+    "provenance": {
+      "type": "object",
+      "properties": {
+        "source": {
+          "type": "string"
+        },
+        "build_chain": {
+          "type": "string",
+          "enum": [
+            "deterministic",
+            "declared"
+          ]
+        },
+        "signatures": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "pgp",
+                  "x509"
+                ]
+              },
+              "fingerprint": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "fingerprint"
+            ]
+          }
+        }
+      }
+    },
+    "links": {
+      "type": "object",
+      "properties": {
+        "pdf": {
+          "type": "string"
+        },
+        "metadata": {
+          "type": "string"
+        },
+        "prov": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

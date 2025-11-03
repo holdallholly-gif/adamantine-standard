@@ -1,0 +1,12 @@
+# Verification Commands
+
+# macOS/Linux
+shasum -a 256 "$1" | awk '{print $1}'
+
+# Windows PowerShell
+(Get-FileHash -Algorithm SHA256 $args[0]).Hash
+
+# Minimal bash check script
+file="$1"; hash=$(shasum -a 256 "$file" | awk '{print $1}'); \
+echo "{\"doc\":\"$file\",\"sha256\":\"$hash\",\"utc\":\"$(date -u +%FT%TZ)\"}" >> repro_log.jsonl; \
+echo "$hash"

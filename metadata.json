@@ -1,0 +1,34 @@
+{
+  "metadata": {
+    "title": "Certified Record v1.0 \u2014 Adamantine Standard (Master Archive)",
+    "upload_type": "publication",
+    "publication_type": "report",
+    "description": "Authoritative, PDF/A-2u-compliant Master Archive establishing the Adamantine Standard. Includes deterministic build chain, verification scripts, and cross-ledger registration data. Implements the Genesis Proof protocol for lawful authority verification.",
+    "creators": [
+      {
+        "name": "Holly Warnock",
+        "affiliation": "Independent Entrepreneur"
+      }
+    ],
+    "keywords": [
+      "Adamantine Standard",
+      "Genesis Proof",
+      "Bridging Law Framework",
+      "Cryptographic Constitutionalism",
+      "Legal-Tech Governance",
+      "Fiduciary Accountability"
+    ],
+    "license": "cc-by-nc-nd-4.0",
+    "access_right": "open",
+    "language": "eng",
+    "notes": "Includes Certified_Record_v1.0.pdf, verification scripts, LaTeX appendix, and ledger_entry.json.",
+    "version": "1.0.0",
+    "dates": [
+      {
+        "type": "Issued",
+        "start": "2025-10-28"
+      }
+    ]
+  },
+  "files": []
+}

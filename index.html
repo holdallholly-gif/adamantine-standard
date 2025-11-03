@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Adamantine Verification Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Adamantine Verification — Live Audit Trail</h1>
+    <p>Each row is a verification event from the repository's CI.</p>
+  </header>
+  <main>
+    <div id="status" class="status">Loading verification log…</div>
+    <table id="log">
+      <thead>
+        <tr>
+          <th>UTC</th>
+          <th>Document</th>
+          <th>SHA-256</th>
+          <th>Expected</th>
+          <th>Match (Expected)</th>
+          <th>Match (Ledger)</th>
+          <th>Tool</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </main>
+  <footer>
+    <p>Powered by the Adamantine Standard — self-verifying repositories.</p>
+  </footer>
+  <script src="render_log.js"></script>
+</body>
+</html>
