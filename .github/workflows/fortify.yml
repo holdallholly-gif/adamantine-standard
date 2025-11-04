@@ -1,4 +1,4 @@
-name: Fortify AST Scan (easy)
+name: Fortify AST Scan (Refined)
 
 on:
   push:
@@ -11,12 +11,13 @@ permissions:
 jobs:
   fortify:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Check out code
+      - name: Check out repository
         uses: actions/checkout@v4
 
-      # Friendly check: stop early if any secret is missing
-      - name: Quick preflight (are the secrets set?)
+      # Preflight: stop early if any secret is missing
+      - name: Verify required secrets
         shell: bash
         run: |
           missing=()
@@ -25,9 +26,10 @@ jobs:
           [ -z "${{ secrets.FOD_CLIENT_SECRET }}" ] && missing+=("FOD_CLIENT_SECRET")
           [ -z "${{ secrets.FOD_TENANT }}" ] && missing+=("FOD_TENANT")
           [ -z "${{ secrets.FOD_RELEASE_ID }}" ] && missing+=("FOD_RELEASE_ID")
+
           if [ ${#missing[@]} -gt 0 ]; then
             echo "❌ Missing secrets: ${missing[*]}"
-            echo "Fix: Settings → Secrets → Actions → add each one."
+            echo "Fix: Repo → Settings → Secrets and variables → Actions → add each one."
             exit 1
           else
             echo "✅ All required secrets are present."
@@ -42,10 +44,47 @@ jobs:
           fod_client_secret: ${{ secrets.FOD_CLIENT_SECRET }}
           fod_tenant: ${{ secrets.FOD_TENANT }}
           fod_release_id: ${{ secrets.FOD_RELEASE_ID }}
-          scan_method: "FoDUpload"  # simplest: upload and scan in FoD
-          policy_failure_break_build: false  # don’t fail your build on findings yet
+          scan_method: "FoDUpload"               # upload and scan in FoD
+          policy_failure_break_build: false      # don't fail build on findings yet
 
-      # Nice end message
+      # Always show a simple result line
       - name: Show result
         if: always()
         run: echo "Fortify scan finished with status: ${{ job.status }}"
+
+      # Human-readable audit summary on the run page
+      - name: Write audit summary
+        if: always()
+        run: |
+          echo "### Fortify Audit" >> $GITHUB_STEP_SUMMARY
+          echo "- Status: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Run ID: ${{ github.run_id }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Branch: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Commit: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Timestamp (UTC): $(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_STEP_SUMMARY
+
+      # Machine-readable audit artifact (downloadable JSON)
+      - name: Create audit JSON
+        if: always()
+        run: |
+          ts=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+          cat > fortify_audit.json <<EOF
+          {
+            "workflow": "Fortify AST Scan",
+            "status": "${{ job.status }}",
+            "run_id": "${{ github.run_id }}",
+            "run_number": "${{ github.run_number }}",
+            "repository": "${{ github.repository }}",
+            "branch": "${{ github.ref_name }}",
+            "commit": "${{ github.sha }}",
+            "timestamp_utc": "$ts"
+          }
+          EOF
+
+      - name: Upload audit artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fortify-audit-${{ github.run_id }}
+          path: fortify_audit.json
+          retention-days: 30
