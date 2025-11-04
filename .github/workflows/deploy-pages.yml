@@ -1,82 +1,42 @@
-name: Verify & Deploy
+name: Deploy Verification Dashboard
 
 on:
   push:
     branches: [ main ]
-  workflow_dispatch:
+  workflow_run:
+    workflows: ["Adamantine Verify"]
+    types: [completed]
 
+# 🔑 REQUIRED for Pages deploy
 permissions:
-  contents: write
+  contents: read
   pages: write
   id-token: write
 
+# Avoid overlapping deploys
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
 jobs:
-  verify:
-    runs-on: ubuntu-latest
-    steps:
-      - name: 🧩 Check out repository
-        uses: actions/checkout@v4
-
-      - name: 🐍 Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.x'
-
-      - name: 🔍 Verify document integrity
-        id: verify
-        run: |
-          set -e
-          ts="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-          result="missing"
-          sha=""
-
-          if [ -f "Certified_Record_v1.0.pdf" ] && [ -f "ledger_entry.json" ]; then
-            python3 verify_sha256.py Certified_Record_v1.0.pdf ledger_entry.json || true
-            status=$?
-
-            if command -v sha256sum >/dev/null 2>&1; then
-              sha="$(sha256sum Certified_Record_v1.0.pdf | awk '{print $1}')"
-            else
-              sha="$(shasum -a 256 Certified_Record_v1.0.pdf | awk '{print $1}')"
-            fi
-
-            if [ "$status" -eq 0 ]; then
-              result="ok"
-            else
-              result="mismatch"
-            fi
-          fi
-
-          echo "{\"timestamp\":\"$ts\",\"sha256\":\"$sha\",\"result\":\"$result\",\"commit\":\"${GITHUB_SHA}\"}" >> repro_log.jsonl
-          mkdir -p docs
-          cp repro_log.jsonl docs/repro_log.jsonl
-
-      - name: 📝 Commit updated log
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add repro_log.jsonl docs/repro_log.jsonl || true
-          if ! git diff --cached --quiet; then
-            git commit -m "update reproducibility log [skip ci]"
-            git push
-          fi
-
   deploy:
     runs-on: ubuntu-latest
-    needs: verify
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
-      - name: ⚙️ Configure Pages
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Pages
         uses: actions/configure-pages@v5
 
-      - name: 📦 Upload dashboard
+      - name: Upload dashboard
         uses: actions/upload-pages-artifact@v3
         with:
-          path: docs
+          path: docs  # <-- your index.html lives here
 
-      - name: 🚀 Deploy to GitHub Pages
+      - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
