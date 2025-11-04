@@ -1,17 +1,186 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Adamantine Verification Dashboard</title>
+  <meta name="description" content="Live, public proof of integrity for the Adamantine Framework." />
   <style>
-    body { font-family: system-ui, sans-serif; background: #0a0a0a; color: #f5f5f5; text-align: center; padding: 3em; }
-    h1 { color: #4cd964; }
-    .status { margin-top: 2em; font-size: 1.2em; }
+    :root{
+      --bg:#0a0a0a; --card:#111; --ink:#f5f5f5; --muted:#b9b9b9;
+      --accent:#4cd964; --bad:#ff5c5c; --line:#1c1c1c;
+      --pad:20px; --radius:14px; --max:900px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;line-height:1.45}
+    header{padding:48px 20px 24px;border-bottom:1px solid var(--line);text-align:center}
+    header h1{margin:0 0 10px;font-size:clamp(24px,4.5vw,34px);color:var(--accent)}
+    header p{margin:6px auto 0;max-width:var(--max);color:var(--muted)}
+    main{padding:24px 20px;max-width:var(--max);margin:0 auto;display:grid;gap:24px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:var(--pad)}
+    h2{margin:0 0 12px;font-size:clamp(18px,3.8vw,22px);color:var(--accent)}
+    .how-grid{display:grid;gap:14px}
+    .step{background:#0f0f0f;border-left:4px solid var(--accent);border-radius:12px;padding:14px}
+    .step h3{margin:0 0 6px;font-size:16px}
+    .step p{margin:0;color:var(--muted)}
+    .log-meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center;color:var(--muted);font-size:14px;margin:0 0 8px}
+    .badge{display:inline-block;padding:2px 8px;border-radius:999px;font-weight:600;font-size:12px;border:1px solid var(--line)}
+    .ok{background:rgba(76,217,100,.12);color:var(--accent);border-color:rgba(76,217,100,.35)}
+    .mismatch{background:rgba(255,92,92,.12);color:var(--bad);border-color:rgba(255,92,92,.35)}
+    .missing{background:rgba(255,255,255,.08);color:#ddd;border-color:#333}
+    table{width:100%;border-collapse:collapse;border:1px solid var(--line);overflow:hidden;border-radius:12px}
+    th,td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left;font-size:14px}
+    th{background:#0f0f0f;color:#d9d9d9}
+    tbody tr:hover{background:#0f0f0f}
+    code,kbd{background:#151515;border:1px solid #222;border-radius:8px;padding:2px 6px;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:13px;color:#dfe}
+    footer{padding:32px 20px;color:var(--muted);text-align:center;border-top:1px solid var(--line)}
+    a{color:var(--accent);text-decoration:none}
+    .hint{font-size:13px;color:var(--muted)}
+    .center{text-align:center}
   </style>
 </head>
 <body>
-  <h1>✅ Adamantine Verification Dashboard</h1>
-  <p class="status">Live verification workflows are now active.<br>Logs and results will publish here automatically.</p>
+  <header>
+    <h1>✅ Adamantine Verification Dashboard</h1>
+    <p>
+      The Adamantine Framework is a living system for truth and accountability.
+      It bridges law, ethics, and technology to make integrity <em>verifiable instead of promised</em>.
+      Every action leaves a cryptographic proof—so institutions don’t just say they’re accountable, they <strong>show it in real time</strong>.
+    </p>
+  </header>
+
+  <main>
+    <!-- Live Log -->
+    <section class="card" id="log-card">
+      <h2>📜 Live Verification Log</h2>
+      <p class="hint">Automatically loads <code>docs/repro_log.jsonl</code> and refreshes every 30 seconds.</p>
+      <div class="log-meta">
+        <span id="log-status" class="badge missing">Loading…</span>
+        <span id="log-updated" class="hint">Last updated: —</span>
+      </div>
+      <div id="log-table-wrap">
+        <table id="log-table" hidden>
+          <thead>
+            <tr>
+              <th>Time (UTC)</th>
+              <th>File</th>
+              <th>Result</th>
+              <th>SHA-256 (short)</th>
+              <th>Commit</th>
+            </tr>
+          </thead>
+          <tbody id="log-body"></tbody>
+        </table>
+        <p id="log-empty" class="center hint" hidden>No entries yet. Trigger a run by committing a small change in your repo.</p>
+        <p id="log-error" class="center hint" hidden>Couldn’t load the log. Make sure <code>docs/repro_log.jsonl</code> exists (the workflow creates it).</p>
+      </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="card">
+      <h2>⚙️ How It Works</h2>
+      <div class="how-grid">
+        <div class="step">
+          <h3>1️⃣ Create a document</h3>
+          <p>Publish your report, decision, or statement — the system’s “promise” to the public.</p>
+        </div>
+        <div class="step">
+          <h3>2️⃣ Make a digital fingerprint</h3>
+          <p>A cryptographic hash (SHA-256) is created. If even a comma changes later, the fingerprint changes too.</p>
+        </div>
+        <div class="step">
+          <h3>3️⃣ Record to the ledger</h3>
+          <p>The fingerprint is time-stamped and logged, creating permanent proof of authenticity.</p>
+        </div>
+        <div class="step">
+          <h3>4️⃣ Auto-verify</h3>
+          <p>On every update, the system re-checks the file. ✅ Match = authentic. ❌ Mismatch = changed.</p>
+        </div>
+        <div class="step">
+          <h3>5️⃣ Public dashboard</h3>
+          <p>Results publish here in real time — turning transparency into something you can see.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Quick Verify (human steps) -->
+    <section class="card">
+      <h2>🧪 Verify It Yourself</h2>
+      <p class="hint">Anyone can reproduce the check locally. Two easy options:</p>
+      <ol>
+        <li>Python:<br><code>python3 verify_sha256.py Certified_Record_v1.0.pdf ledger_entry.json</code></li>
+        <li>Mac/Linux one-liner:<br><code>./verify_sha256.sh Certified_Record_v1.0.pdf ledger_entry.json</code></li>
+      </ol>
+    </section>
+  </main>
+
+  <footer>
+    Adamantine Standard • Live integrity proof • <a href="https://github.com/holdallholly-gif/adamantine-standard">View repository</a>
+  </footer>
+
+  <script>
+    // Simple loader for newline-delimited JSON at docs/repro_log.jsonl
+    const statusEl = document.getElementById('log-status');
+    const updatedEl = document.getElementById('log-updated');
+    const table = document.getElementById('log-table');
+    const tbody = document.getElementById('log-body');
+    const emptyMsg = document.getElementById('log-empty');
+    const errMsg = document.getElementById('log-error');
+
+    async function loadLog() {
+      try {
+        const res = await fetch('repro_log.jsonl', {cache: 'no-store'});
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const text = await res.text();
+
+        const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+        tbody.innerHTML = '';
+
+        if (lines.length === 0) {
+          table.hidden = true; emptyMsg.hidden = false; errMsg.hidden = true;
+          statusEl.textContent = 'No entries yet'; statusEl.className = 'badge missing';
+        } else {
+          for (let i = lines.length - 1; i >= 0; i--) {
+            try {
+              const row = JSON.parse(lines[i]);
+              const tr = document.createElement('tr');
+
+              const ts = row.timestamp || '—';
+              const file = row.file || '—';
+              const resu = row.result || '—';
+              const sha = (row.sha256 || '—').slice(0, 10) + ((row.sha256 || '').length ? '…' : '');
+              const commit = (row.commit || '—').slice(0, 7);
+
+              const td1 = document.createElement('td'); td1.textContent = ts;
+              const td2 = document.createElement('td'); td2.textContent = file;
+              const td3 = document.createElement('td');
+              td3.innerHTML = `<span class="badge ${resu === 'ok' ? 'ok' : (resu === 'mismatch' ? 'mismatch' : 'missing')}">${resu}</span>`;
+              const td4 = document.createElement('td'); td4.textContent = sha;
+              const td5 = document.createElement('td'); td5.textContent = commit;
+
+              tr.append(td1, td2, td3, td4, td5);
+              tbody.appendChild(tr);
+            } catch (_) {}
+          }
+          table.hidden = false; emptyMsg.hidden = true; errMsg.hidden = true;
+
+          // status badge reflects most recent entry
+          const latest = JSON.parse(lines[lines.length - 1]);
+          const resu = latest.result || 'missing';
+          statusEl.textContent = resu === 'ok' ? 'Verified' : (resu === 'mismatch' ? 'Changed' : 'Missing');
+          statusEl.className = 'badge ' + (resu === 'ok' ? 'ok' : (resu === 'mismatch' ? 'mismatch' : 'missing'));
+        }
+
+        updatedEl.textContent = 'Last updated: ' + new Date().toISOString().replace('T',' ').replace('Z',' UTC');
+      } catch (e) {
+        table.hidden = true; emptyMsg.hidden = true; errMsg.hidden = false;
+        statusEl.textContent = 'Error loading log'; statusEl.className = 'badge mismatch';
+        updatedEl.textContent = 'Last updated: —';
+      }
+    }
+
+    loadLog();
+    setInterval(loadLog, 30000); // refresh every 30s
+  </script>
 </body>
 </html>
