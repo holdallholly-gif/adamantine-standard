@@ -1,0 +1,51 @@
+name: Fortify AST Scan (easy)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  fortify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      # Friendly check: stop early if any secret is missing
+      - name: Quick preflight (are the secrets set?)
+        shell: bash
+        run: |
+          missing=()
+          [ -z "${{ secrets.FOD_URL }}" ] && missing+=("FOD_URL")
+          [ -z "${{ secrets.FOD_CLIENT_ID }}" ] && missing+=("FOD_CLIENT_ID")
+          [ -z "${{ secrets.FOD_CLIENT_SECRET }}" ] && missing+=("FOD_CLIENT_SECRET")
+          [ -z "${{ secrets.FOD_TENANT }}" ] && missing+=("FOD_TENANT")
+          [ -z "${{ secrets.FOD_RELEASE_ID }}" ] && missing+=("FOD_RELEASE_ID")
+          if [ ${#missing[@]} -gt 0 ]; then
+            echo "❌ Missing secrets: ${missing[*]}"
+            echo "Fix: Settings → Secrets → Actions → add each one."
+            exit 1
+          else
+            echo "✅ All required secrets are present."
+          fi
+
+      # Run the Fortify scan (FoD upload method)
+      - name: Run Fortify scan
+        uses: fortify/github-action@v2
+        with:
+          fod_base_url: ${{ secrets.FOD_URL }}
+          fod_client_id: ${{ secrets.FOD_CLIENT_ID }}
+          fod_client_secret: ${{ secrets.FOD_CLIENT_SECRET }}
+          fod_tenant: ${{ secrets.FOD_TENANT }}
+          fod_release_id: ${{ secrets.FOD_RELEASE_ID }}
+          scan_method: "FoDUpload"  # simplest: upload and scan in FoD
+          policy_failure_break_build: false  # don’t fail your build on findings yet
+
+      # Nice end message
+      - name: Show result
+        if: always()
+        run: echo "Fortify scan finished with status: ${{ job.status }}"
